@@ -1,0 +1,27 @@
+{
+  "expo": {
+    "name": "my-app",
+    "slug": "my-app",
+    "version": "1.0.0",
+    "plugins": [
+      [
+        "expo-build-properties",
+        {
+          "android": {
+            "newArchEnabled": true
+          },
+          "ios": {
+            "newArchEnabled": true
+          }
+        }
+      ],
+      "@react-native-firebase/app"
+    ],
+    "android": {
+      "package": "com.anonymous.myapp"
+    },
+    "ios": {
+      "bundleIdentifier": "com.anonymous.myapp"
+    }
+  }
+}
