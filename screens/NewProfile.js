@@ -30,9 +30,9 @@ export default function NewProfile({ navigation }) {
   const handleChoosePhoto = async () => {
     try {
       const result = await ImagePicker.launchImageLibraryAsync({
-        mediaTypes: ImagePicker.MediaTypeOptions.Images,
+        mediaTypes: ImagePicker.Images,
         allowsEditing: true,
-        aspect: [4, 5],
+        aspect: [7, 14],
         quality: 0.8,
       });
 
@@ -231,7 +231,7 @@ const styles = StyleSheet.create({
   image: {
     width: 150,
     height: 150,
-    borderRadius: 75,
+    // borderRadius: 75,
   },
   buttonGroup: {
     flexDirection: 'row',

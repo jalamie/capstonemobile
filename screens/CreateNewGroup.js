@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { View, Text, TextInput, Button, FlatList, StyleSheet, Alert,TouchableOpacity } from 'react-native';
 import { db } from '../App';
-import { collection, query, where, getDocs, addDoc } from 'firebase/firestore';
+import { collection, query, where, getDocs, addDoc, orderBy, setDoc, doc } from 'firebase/firestore';
 
 export default function CreateGroup({ navigation }) {
     const [groupName, setGroupName] = useState('');
@@ -10,7 +10,9 @@ export default function CreateGroup({ navigation }) {
 
     useEffect(() => {
         const fetchProfiles = async () => {
-            const querySnapshot = await getDocs(collection(db, "profiles"));
+            const profilesCollectionRef = collection(db, "profiles");
+            const profilesQuery = query(profilesCollectionRef, orderBy("createdAt", "desc"));
+            const querySnapshot = await getDocs(profilesQuery);
             const loadedProfiles = querySnapshot.docs.map((doc) => ({
                 id: doc.id,
                 name: doc.data().name, 
@@ -50,7 +52,7 @@ export default function CreateGroup({ navigation }) {
         }
 
         try {
-            await addDoc(collection(db, `groups/${groupName}`), {
+            await setDoc(doc(db, "groups", groupName), {
                 name: groupName,
                 members: selectedProfiles
             });
@@ -61,7 +63,6 @@ export default function CreateGroup({ navigation }) {
             Alert.alert("Error", "Failed to create the group.");
         }
     };
-
     const renderItem = ({ item }) => (
         <TouchableOpacity
             style={[styles.item, selectedProfiles.includes(item.id) ? styles.itemSelected : null]}
@@ -119,7 +120,7 @@ const styles = StyleSheet.create({
         fontSize: 16,
     },
     button: {
-        backgroundColor: '#00f',
+        backgroundColor: '#131b4d',
         padding: 10,
         margin: 10,
         alignItems: 'center',

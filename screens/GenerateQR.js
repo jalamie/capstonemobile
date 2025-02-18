@@ -9,9 +9,8 @@ export default function GenerateQR({ route, navigation }) {
     const { groupId } = route.params;
     const [encryptedData, setEncryptedData] = useState('');
     const [group, setGroup] = useState(null);
-    const createCustomIV = () => {
-        return CryptoJS.enc.Utf8.parse('1234567890123456');
-    };
+    const [membersData, setMembersData] = useState([]);
+
     useEffect(() => {
         const fetchGroupData = async () => {
             const groupRef = doc(db, "groups", groupId);
@@ -25,12 +24,13 @@ export default function GenerateQR({ route, navigation }) {
                     const profilesData = await Promise.all(groupData.members.map(async (id) => {
                         const docRef = doc(db, "profiles", id);
                         const docSnap = await getDoc(docRef);
-                        return docSnap.exists() ? { passport_no: docSnap.id } : null;
+                        return docSnap.exists() ? { id: docSnap.id, name: docSnap.data().name } : null;
                     }));
 
                     const filteredProfiles = profilesData.filter(profile => profile !== null);
+                    setMembersData(filteredProfiles);
                     const jsonData = JSON.stringify(filteredProfiles);
-                    const iv = createCustomIV();
+                    const iv = CryptoJS.enc.Utf8.parse('1234567890123456');
                     const key = CryptoJS.enc.Utf8.parse('abcdefghijklmnop');
                     const encrypted = CryptoJS.AES.encrypt(jsonData, key, {
                         iv: iv,
@@ -54,8 +54,8 @@ export default function GenerateQR({ route, navigation }) {
             {group && (
                 <>
                     <Text style={styles.title}>{group.name}</Text>
-                    {group.members.map((id, index) => (
-                        <Text key={id} style={styles.profileText}>Name: {id}</Text>
+                    {membersData.map((member, index) => (
+                        <Text key={member.id} style={styles.profileText}>Name: {member.name}</Text>
                     ))}
                 </>
             )}
@@ -82,12 +82,6 @@ const styles = StyleSheet.create({
         fontSize: 24,
         fontWeight: 'bold',
         marginBottom: 10
-    },
-    subtitle: {
-        fontSize: 18,
-        fontWeight: 'bold',
-        marginTop: 10,
-        marginBottom: 5
     },
     profileText: {
         fontSize: 16,

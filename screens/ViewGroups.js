@@ -1,9 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { View, Text, FlatList, StyleSheet, SafeAreaView, TouchableOpacity } from 'react-native';
 import { db } from '../App';
-import { collection, onSnapshot } from 'firebase/firestore';
+import { collection, onSnapshot, doc, deleteDoc, query, orderBy } from 'firebase/firestore';
 import { Alert } from 'react-native';
-import { doc, deleteDoc } from 'firebase/firestore';
 import Icon from 'react-native-vector-icons/MaterialIcons';
 
 const handleDeleteGroup = (groupId) => {
@@ -38,7 +37,7 @@ export default function ViewGroup({ navigation }) {
 
     useEffect(() => {
         const usersCollectionRef = collection(db, `groups`);
-
+        // const queryRef = query(usersCollectionRef, orderBy('createdAt', 'desc'));
         const unsubscribe = onSnapshot(usersCollectionRef, (snapshot) => {
             if (snapshot.empty) {
                 console.log('No documents found in Firestore!');

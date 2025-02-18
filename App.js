@@ -13,6 +13,8 @@ import GenerateQR from './screens/GenerateQR';
 import { initializeApp } from 'firebase/app';
 import { getFirestore} from 'firebase/firestore';
 import { getStorage } from 'firebase/storage';
+import { HeaderBackButton } from '@react-navigation/elements';
+
 
 const firebaseConfig = {
   apiKey: "AIzaSyDc3qxRx6i28a_tY3bMB0tXWK3jM7MUo-g",
@@ -56,11 +58,18 @@ export default function App() {
           component={NewProfile}
           options={{ title: 'Create Profile' }}
         />
-        <Stack.Screen 
-          name="ViewProfiles" 
+        <Stack.Screen
+          name="ViewProfiles"
           component={ViewProfiles}
-          options={{ title: 'All Profiles' }}
-        />
+          options={({ navigation }) => ({
+            headerLeft: (props) => (
+              <HeaderBackButton
+                {...props}
+                onPress={() => { navigation.navigate("Home")}}
+              />
+    ),
+  })}
+/>
         <Stack.Screen 
           name="GroupList" 
           component={ViewGroups}

@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { View, Text, FlatList, StyleSheet, SafeAreaView, TouchableOpacity } from 'react-native';
 import { db } from '../App';
-import { collection, onSnapshot } from 'firebase/firestore';
+import {collection, query, orderBy, onSnapshot } from 'firebase/firestore';
+
 import { Alert } from 'react-native';
 import { doc, deleteDoc } from 'firebase/firestore';
 import Icon from 'react-native-vector-icons/MaterialIcons';
@@ -38,8 +39,8 @@ export default function ViewProfiles({ navigation }) {
 
     useEffect(() => {
         const usersCollectionRef = collection(db, `profiles`);
-
-        const unsubscribe = onSnapshot(usersCollectionRef, (snapshot) => {
+        const queryRef = query(usersCollectionRef, orderBy('createdAt', 'desc'));
+        const unsubscribe = onSnapshot(queryRef, (snapshot) => {
             if (snapshot.empty) {
                 console.log('No documents found in Firestore!');
                 return;
@@ -68,7 +69,9 @@ export default function ViewProfiles({ navigation }) {
         </View>
     );
     
-
+    const handleNavigateHome = () => {
+        navigation.navigate('MainPage'); // Assuming 'Home' is your home screen route name
+    };
     return (
         <SafeAreaView style={styles.container}>
             <FlatList

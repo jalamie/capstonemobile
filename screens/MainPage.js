@@ -1,7 +1,14 @@
 import React from 'react';
 import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
+import { useFocusEffect } from '@react-navigation/native';
 
 export default function MainPage({ navigation }) {
+  // useFocusEffect(
+  //   React.useCallback(() => {
+  //     // Set the title when the screen is focused
+  //     navigation.setOptions({ title: 'Home Page' });
+  //   }, [navigation])
+  // );
   return (
     <View style={styles.container}>
       <View style={styles.card}>
