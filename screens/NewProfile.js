@@ -11,7 +11,7 @@ import {
   SafeAreaView,
   Dimensions 
 } from 'react-native';
-import { getFirestore, collection, addDoc } from 'firebase/firestore';
+import { getFirestore, collection, addDoc, getDocs, setDoc, doc } from 'firebase/firestore';
 import { getStorage, ref, uploadBytes, getDownloadURL } from 'firebase/storage';
 import * as ImagePicker from 'expo-image-picker';
 // import { db } from '../App';
@@ -45,14 +45,14 @@ export default function NewProfile({ navigation }) {
     }
   };
 
-  const uploadImage = async (uri) => {
+  const uploadImage = async (uri, passportNumber) => {
     try {
       console.log('Starting image upload...');
       const response = await fetch(uri);
       const blob = await response.blob();
       
       console.log('Creating filename...');
-      const filename = `profiles/${Date.now()}-${Math.random().toString(36).slice(2)}`;
+      const filename = `profiles/${passportNumber}`;
       const storageRef = ref(storage, filename);
       
       console.log('Uploading to Firebase...');
@@ -86,11 +86,18 @@ export default function NewProfile({ navigation }) {
     setError('');
 
     try {
-      const photoURL = await uploadImage(formData.photo);
+      const profilesCollection = collection(db, 'profiles');
+      const snapshot = await getDocs(profilesCollection);
+      const profileCount = snapshot.size;
+
+      // Generate passport number dynamically with 7-digit padding
+      const numericPart = (profileCount + 1).toString().padStart(7, '0');
+      const passportNumber = `K${numericPart}A`;
+      const photoURL = await uploadImage(formData.photo, passportNumber);
       
-      await addDoc(collection(db, 'profiles'), {
+      await setDoc(doc(db, 'profiles', passportNumber), {
         name: formData.name,
-        photo: photoURL,
+        passport_image: photoURL,
         createdAt: new Date().toISOString(),
       });
       

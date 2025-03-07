@@ -28,6 +28,10 @@ export default function CreateGroup({ navigation }) {
             if (prevSelected.includes(id)) {
                 return prevSelected.filter(profileId => profileId !== id);
             } else {
+                if (prevSelected.length >= 4) {
+                    Alert.alert("Limit Reached", "You can only select up to 4 profiles.");
+                    return prevSelected;
+                }
                 return [...prevSelected, id];
             }
         });
@@ -74,9 +78,10 @@ export default function CreateGroup({ navigation }) {
 
     return (
         <View style={styles.container}>
+            <Text style={styles.label}>  Group Name</Text>
             <TextInput
                 style={styles.input}
-                placeholder="Group Name"
+                placeholder="Please Enter Group Name"
                 value={groupName}
                 onChangeText={setGroupName}
             />
