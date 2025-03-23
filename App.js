@@ -10,6 +10,7 @@ import ViewGroups from './screens/ViewGroups';
 import ViewGroup from './screens/ViewGroup';
 import EditGroup from './screens/EditGroup';
 import GenerateQR from './screens/GenerateQR';
+import  ProfileQR  from './screens/ProfileQR';
 import { initializeApp } from 'firebase/app';
 import { getFirestore} from 'firebase/firestore';
 import { getStorage } from 'firebase/storage';
@@ -94,6 +95,11 @@ export default function App() {
           name="GenerateQR" 
           component={GenerateQR}
           options={{ title: 'Generate QR' }}
+        />
+        <Stack.Screen 
+          name="ProfileQR" 
+          component={ProfileQR}
+          options={{ title: 'Profile QR Code' }}
         />
       </Stack.Navigator>
     </NavigationContainer>

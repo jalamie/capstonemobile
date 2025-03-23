@@ -1,8 +1,8 @@
+// Now, let's update the ViewProfiles component to navigate to ProfileQR when a profile is selected
 import React, { useState, useEffect } from 'react';
 import { View, Text, FlatList, StyleSheet, SafeAreaView, TouchableOpacity } from 'react-native';
 import { db } from '../App';
-import {collection, query, orderBy, onSnapshot } from 'firebase/firestore';
-
+import { collection, query, orderBy, onSnapshot } from 'firebase/firestore';
 import { Alert } from 'react-native';
 import { doc, deleteDoc } from 'firebase/firestore';
 import Icon from 'react-native-vector-icons/MaterialIcons';
@@ -33,9 +33,8 @@ const handleDeleteProfile = (profileId) => {
     );
 };
 
-
 export default function ViewProfiles({ navigation }) {
-    const [profiles, setProfiles] = useState([]); // State to store profile data
+    const [profiles, setProfiles] = useState([]);
 
     useEffect(() => {
         const usersCollectionRef = collection(db, `profiles`);
@@ -57,21 +56,33 @@ export default function ViewProfiles({ navigation }) {
         return () => unsubscribe();
     }, []);
 
+    const handleProfilePress = (profileId) => {
+        navigation.navigate('ProfileQR', { profileId });
+    };
+
     const renderItem = ({ item }) => (
-        <View style={styles.itemContainer}>
+        <TouchableOpacity 
+            style={styles.itemContainer}
+            onPress={() => handleProfilePress(item.id)}
+        >
             <Text style={styles.itemText}>{item.name}</Text>
-            <TouchableOpacity 
-                style={styles.deleteButton}
-                onPress={() => handleDeleteProfile(item.id)}
-            >
-                <Icon name="delete" size={20} color="white" />  
-            </TouchableOpacity>
-        </View>
+            <View style={styles.buttonContainer}>
+                <TouchableOpacity 
+                    style={styles.qrButton}
+                    onPress={() => handleProfilePress(item.id)}
+                >
+                    <Icon name="qr-code" size={20} color="white" />  
+                </TouchableOpacity>
+                <TouchableOpacity 
+                    style={styles.deleteButton}
+                    onPress={() => handleDeleteProfile(item.id)}
+                >
+                    <Icon name="delete" size={20} color="white" />  
+                </TouchableOpacity>
+            </View>
+        </TouchableOpacity>
     );
     
-    const handleNavigateHome = () => {
-        navigation.navigate('MainPage'); // Assuming 'Home' is your home screen route name
-    };
     return (
         <SafeAreaView style={styles.container}>
             <FlatList
@@ -85,6 +96,7 @@ export default function ViewProfiles({ navigation }) {
 }
 
 const styles = StyleSheet.create({
+    // ViewProfiles styles
     container: {
         flex: 1,
         marginTop: 20,
@@ -103,18 +115,22 @@ const styles = StyleSheet.create({
         fontSize: 16,
         color: '#333',
     },
+    buttonContainer: {
+        flexDirection: 'row',
+    },
+    qrButton: {
+        padding: 10,
+        backgroundColor: '#4287f5',
+        borderRadius: 5,
+        marginRight: 10,
+    },
     deleteButton: {
         padding: 10,
-        backgroundColor: '#ff6347',  // Tomato color for the delete button
+        backgroundColor: '#ff6347',
         borderRadius: 5,
-    },
-    deleteButtonText: {
-        color: 'white',
-        fontSize: 16,
     },
     separator: {
         height: 1,
         backgroundColor: '#131b4d',
     },
 });
-

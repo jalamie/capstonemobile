@@ -51,14 +51,19 @@ export default function EditGroup({ route, navigation }) {
     };
 
     const handleSelectProfile = (profileId) => {
-        if (members.includes(profileId)) {
+        if (members.includes(profileId)) { //removing a member
             if (members.length > 2) {
                 setMembers(members.filter(id => id !== profileId));
-            } else {
+            }
+            else {
                 Alert.alert("Error", "A group must have at least two members.");
             }
-        } else {
-            setMembers([...members, profileId]);
+        } else { // adding a member
+            if (members.length >= 4) { 
+                Alert.alert("Error", "A group can have a maximum of four members.");
+            } else {
+                setMembers([...members, profileId]);
+            }
         }
     };
 
