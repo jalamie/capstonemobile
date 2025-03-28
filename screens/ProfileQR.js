@@ -18,7 +18,10 @@ export default function ProfileQR({ route, navigation }) {
             if (profileSnap.exists()) {
                 const profileData = {
                     id: profileSnap.id,
-                    name: profileSnap.data().name
+                    name: profileSnap.data().name,
+                    age: calculateAge(profileSnap.data().dob),
+                    dob: profileSnap.data().dob,
+
                 };
                 
                 setProfile(profileData);
@@ -48,6 +51,8 @@ export default function ProfileQR({ route, navigation }) {
                 <>
                     <Text style={styles.title}>Profile QR Code</Text>
                     <Text style={styles.profileText}>Name: {profile.name}</Text>
+                    <Text style={styles.profileText}>Date of Birth: {profile.dob} [Age: {profile.age}]</Text>
+                    <Text style={styles.profileText}>Passport Number: {profile.id}</Text>
                 </>
             )}
             {encryptedData && (
@@ -62,6 +67,39 @@ export default function ProfileQR({ route, navigation }) {
             )}
         </ScrollView>
     );
+}
+function calculateAge(dobString) {
+    // If dob is not provided or invalid, return null or a default value
+    if (!dobString) return null;
+    
+    // Parse the date string - expected format is "YYYY-MM-DD"
+    const dobParts = dobString.split('-');
+    
+    // Check if we have a valid date format
+    if (dobParts.length !== 3) return null;
+    
+    // Create date object (note: month is 0-indexed in JavaScript Date)
+    const year = parseInt(dobParts[0]);
+    const month = parseInt(dobParts[1]) - 1; // Subtract 1 since JS months are 0-indexed
+    const day = parseInt(dobParts[2]);
+    
+    // Create the date object and validate it
+    const dobDate = new Date(year, month, day);
+    
+    // Check if the date is valid
+    if (isNaN(dobDate.getTime())) return null;
+    
+    const today = new Date();
+    
+    let age = today.getFullYear() - dobDate.getFullYear();
+    const monthDifference = today.getMonth() - dobDate.getMonth();
+    
+    // If birthday hasn't occurred yet this year, subtract 1 from age
+    if (monthDifference < 0 || (monthDifference === 0 && today.getDate() < dobDate.getDate())) {
+        age--;
+    }
+    
+    return age;
 }
 
 const styles = StyleSheet.create({

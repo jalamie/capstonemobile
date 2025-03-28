@@ -9,11 +9,17 @@ import {
   ActivityIndicator,
   Alert,
   SafeAreaView,
-  Dimensions 
+  Dimensions,
+  Platform,
+  Modal,
+  TouchableWithoutFeedback,
+  Keyboard, 
 } from 'react-native';
 import { getFirestore, collection, addDoc, getDocs, setDoc, doc } from 'firebase/firestore';
 import { getStorage, ref, uploadBytes, getDownloadURL } from 'firebase/storage';
 import * as ImagePicker from 'expo-image-picker';
+import DateTimePicker from '@react-native-community/datetimepicker';
+
 // import { db } from '../App';
 import { storage, db } from '../App';
 
@@ -23,10 +29,27 @@ export default function NewProfile({ navigation }) {
   const [formData, setFormData] = useState({
     name: '',
     photo: '',
+    date: null,
   });
+  const [showDatePicker, setShowDatePicker] = useState(false);  
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState('');
 
+  const handleDateChange = (event, selectedDate) => {
+    if (event.type === 'set' && selectedDate) {
+      const today = new Date();
+      if (selectedDate > today) {
+        Alert.alert('Error', 'Date cannot be in the future');
+      } else {
+        setFormData(prev => ({...prev, date: selectedDate}));
+      }
+    }
+  };
+  
+  const openDatePicker = () => {
+    setShowDatePicker(true);
+  };
+  
   const handleChoosePhoto = async () => {
     try {
       const result = await ImagePicker.launchImageLibraryAsync({
@@ -72,6 +95,10 @@ export default function NewProfile({ navigation }) {
       Alert.alert('Error', 'Please enter a name');
       return false;
     }
+    if (!formData.date) {
+      Alert.alert('Error', 'Please select a date');
+      return false;
+    }    
     if (!formData.photo) {
       Alert.alert('Error', 'Please select a photo');
       return false;
@@ -89,15 +116,38 @@ export default function NewProfile({ navigation }) {
       const profilesCollection = collection(db, 'profiles');
       const snapshot = await getDocs(profilesCollection);
       const profileCount = snapshot.size;
+      const q = query(profilesCollection, orderBy("createdAt", "desc"), limit(1));
+      const queryprofile = await getDocs(q);
 
-      // Generate passport number dynamically with 7-digit padding
-      const numericPart = (profileCount + 1).toString().padStart(7, '0');
-      const passportNumber = `K${numericPart}A`;
+      // // Generate passport number dynamically with 7-digit padding
+      // const numericPart = (profileCount + 4).toString().padStart(7, '0');
+      // const passportNumber = `K${numericPart}A`;
+      let nextNum = 1; // Default if no profiles exist yet
+    
+      if (!queryprofile.empty) {
+        // Get the ID of the most recently added document
+        const latestPassport = queryprofile.docs[0].id;
+        console.log("Latest passport found:", latestPassport);
+        
+        // Extract the numeric part (assuming format is K#######A)
+        if (latestPassport.startsWith('K') && latestPassport.endsWith('A')) {
+          const numPart = latestPassport.substring(1, latestPassport.length - 1);
+          const latestNum = parseInt(numPart, 10);
+          if (!isNaN(latestNum)) {
+            nextNum = latestNum + 1;
+            console.log("Incrementing from latest number:", latestNum, "to", nextNum);
+          }
+        }
+      } else {
+        console.log("No existing passports found, starting with K0000001A");
+      }
+
       const photoURL = await uploadImage(formData.photo, passportNumber);
       
       await setDoc(doc(db, 'profiles', passportNumber), {
         name: formData.name,
         passport_image: photoURL,
+        dob: formData.date.toISOString().split('T')[0],
         createdAt: new Date().toISOString(),
       });
       
@@ -126,6 +176,43 @@ export default function NewProfile({ navigation }) {
               editable={!isLoading}
             />
           </View>
+          <View style={styles.inputGroup}>
+  <Text style={styles.label}>Date of Birth</Text>
+  <TouchableOpacity
+    onPress={openDatePicker}
+    style={styles.input}
+    disabled={isLoading}
+  >
+    <Text style={{ color: formData.date ? '#000' : '#999' }}>
+      {formData.date ? formData.date.toDateString() : 'Select Date'}
+    </Text>
+  </TouchableOpacity>
+</View>
+
+          <Modal
+  transparent
+  visible={showDatePicker}
+  animationType="fade"
+  onRequestClose={() => setShowDatePicker(false)}
+>
+  <TouchableWithoutFeedback onPress={() => setShowDatePicker(false)}>
+    <View style={styles.modalOverlay}>
+      <TouchableWithoutFeedback>
+        <View style={styles.pickerContainer}>
+          <DateTimePicker
+            value={formData.date || new Date()}
+            mode="date"
+            display={Platform.OS === 'ios' ? 'inline' : 'calendar'}
+            onChange={handleDateChange}
+            maximumDate={new Date()}
+          />
+        </View>
+      </TouchableWithoutFeedback>
+    </View>
+  </TouchableWithoutFeedback>
+</Modal>
+
+
 
           <TouchableOpacity 
             style={[styles.photoButton, formData.photo ? styles.photoSelected : null]}
@@ -278,4 +365,24 @@ const styles = StyleSheet.create({
     marginBottom: 16,
     textAlign: 'center',
   },
+  modalOverlay: {
+    flex: 1,
+    backgroundColor: 'rgba(0, 0, 0, 0.4)',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  
+  pickerContainer: {
+    backgroundColor: '#fff',
+    borderRadius: 8,
+    padding: 16,
+    width: '90%',
+    maxWidth: 400,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.25,
+    shadowRadius: 4,
+    elevation: 5,
+  },
+  
 });

@@ -24,7 +24,12 @@ export default function GenerateQR({ route, navigation }) {
                     const profilesData = await Promise.all(groupData.members.map(async (id) => {
                         const docRef = doc(db, "profiles", id);
                         const docSnap = await getDoc(docRef);
-                        return docSnap.exists() ? { id: docSnap.id, name: docSnap.data().name } : null;
+                        return docSnap.exists() ? { 
+                            id: docSnap.id, 
+                            name: docSnap.data().name, 
+                            age: calculateAge(docSnap.data().dob),
+                            dob: docSnap.data().dob,
+                        } : null;
                     }));
 
                     const filteredProfiles = profilesData.filter(profile => profile !== null);
@@ -71,6 +76,39 @@ export default function GenerateQR({ route, navigation }) {
             )}
         </ScrollView>
     );
+}
+function calculateAge(dobString) {
+    // If dob is not provided or invalid, return null or a default value
+    if (!dobString) return null;
+    
+    // Parse the date string - expected format is "YYYY-MM-DD"
+    const dobParts = dobString.split('-');
+    
+    // Check if we have a valid date format
+    if (dobParts.length !== 3) return null;
+    
+    // Create date object (note: month is 0-indexed in JavaScript Date)
+    const year = parseInt(dobParts[0]);
+    const month = parseInt(dobParts[1]) - 1; // Subtract 1 since JS months are 0-indexed
+    const day = parseInt(dobParts[2]);
+    
+    // Create the date object and validate it
+    const dobDate = new Date(year, month, day);
+    
+    // Check if the date is valid
+    if (isNaN(dobDate.getTime())) return null;
+    
+    const today = new Date();
+    
+    let age = today.getFullYear() - dobDate.getFullYear();
+    const monthDifference = today.getMonth() - dobDate.getMonth();
+    
+    // If birthday hasn't occurred yet this year, subtract 1 from age
+    if (monthDifference < 0 || (monthDifference === 0 && today.getDate() < dobDate.getDate())) {
+        age--;
+    }
+    
+    return age;
 }
 
 const styles = StyleSheet.create({
