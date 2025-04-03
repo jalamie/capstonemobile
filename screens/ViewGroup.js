@@ -59,7 +59,7 @@ const unsubscribe = onSnapshot(groupRef, async (docSnapshot) => {
             <TouchableOpacity style={styles.editButton} onPress={() => navigation.navigate('EditGroup', { groupId })}>
                 <Icon name="edit" size={24} color="white" />
             </TouchableOpacity>
-            <Button title="Generate QR Code" onPress={() => navigation.navigate('GenerateQR', { groupId })} />
+            <Button color="#131b4d" title="Generate QR Code" onPress={() => navigation.navigate('GenerateQR', { groupId })} />
         </View>
     );
 }
@@ -73,10 +73,12 @@ const styles = StyleSheet.create({
         fontSize: 22,
         fontWeight: 'bold',
         marginBottom: 20,
+        paddingHorizontal: 8,
     },
     member: {
         fontSize: 18,
-        padding: 10,
+        paddingHorizontal: 8,
+        paddingVertical: 10,
         borderBottomWidth: 1,
         borderBottomColor: '#ccc',
     },
@@ -84,8 +86,8 @@ const styles = StyleSheet.create({
         position: 'absolute',
         right: 20,
         bottom: 80,
-        backgroundColor: '#007AFF',
+        backgroundColor: '#131b4d',
         padding: 10,
         borderRadius: 30,
-    }
+    },
 });

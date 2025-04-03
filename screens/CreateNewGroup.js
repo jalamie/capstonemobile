@@ -61,7 +61,7 @@ export default function CreateGroup({ navigation }) {
                 members: selectedProfiles
             });
             Alert.alert("Success", "Group created successfully!");
-            navigation.goBack();
+            navigation.navigate('ViewGroup', { groupId: groupName });
         } catch (error) {
             console.error("Error creating group: ", error);
             Alert.alert("Error", "Failed to create the group.");
@@ -78,13 +78,15 @@ export default function CreateGroup({ navigation }) {
 
     return (
         <View style={styles.container}>
-            <Text style={styles.label}>  Group Name</Text>
+            <Text style={styles.label}>Please enter Group Name</Text>
             <TextInput
                 style={styles.input}
-                placeholder="Please Enter Group Name"
+                placeholder="Group Name"
                 value={groupName}
                 onChangeText={setGroupName}
             />
+            <Text style={styles.label}>Please select group members</Text>
+            <Text style={styles.label}>(Select up to 4 profiles, minimum 2 profiles)</Text>
             <FlatList
                 data={profiles}
                 renderItem={renderItem}
@@ -106,17 +108,26 @@ const styles = StyleSheet.create({
         flex: 1,
         padding: 10,
     },
+    label: {
+        fontSize: 18,
+        marginBottom: 5,
+        paddingHorizontal: 8,
+    },
     input: {
-        marginBottom: 15,
+        marginBottom: 10,
         paddingHorizontal: 8,
         paddingVertical: 6,
         borderBottomWidth: 1,
-        borderBottomColor: '#ddd',
+        fontSize: 18,
+        borderWidth: 1,
+        borderRadius: 4,
+        borderColor: '#ddd',
     },
     item: {
-        padding: 10,
+        paddingVertical: 10,
+        paddingHorizontal: 8,
         borderBottomWidth: 1,
-        borderBottomColor: '#ddd',
+        borderColor: '#ddd',
     },
     itemSelected: {
         backgroundColor: '#e2f1f8',

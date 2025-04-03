@@ -52,7 +52,9 @@ export default function App() {
         <Stack.Screen 
           name="Home" 
           component={MainPage}
-          options={{ title: 'Home Page' }}
+          options={{ title: 'Home',
+            headerBackVisible: false,
+           }}
         />
         <Stack.Screen 
           name="NewProfile" 
@@ -66,20 +68,38 @@ export default function App() {
             headerLeft: (props) => (
               <HeaderBackButton
                 {...props}
+                label="Home"
                 onPress={() => { navigation.navigate("Home")}}
               />
-    ),
-  })}
+            ),
+          })}
 />
         <Stack.Screen 
           name="GroupList" 
           component={ViewGroups}
-          options={{ title: 'All Groups' }}
+          options={({ navigation }) => ({
+            headerLeft: (props) => (
+              <HeaderBackButton
+                {...props}
+                label="Home"
+                onPress={() => { navigation.navigate("Home")}}
+              />
+            ),
+          })}
+          
         />
         <Stack.Screen 
           name="ViewGroup" 
           component={ViewGroup}
-          options={{ title: 'View Group' }}
+          options={({ navigation }) => ({
+            headerLeft: (props) => (
+              <HeaderBackButton
+                {...props}
+                label="Groups"
+                onPress={() => { navigation.navigate("GroupList")}}
+              />
+            ),
+          })}
         />
         <Stack.Screen 
           name="CreateGroup" 

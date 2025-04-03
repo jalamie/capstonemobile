@@ -15,7 +15,7 @@ import {
   TouchableWithoutFeedback,
   Keyboard, 
 } from 'react-native';
-import { getFirestore, collection, addDoc, getDocs, setDoc, doc } from 'firebase/firestore';
+import { getFirestore, collection, addDoc, getDocs, setDoc, doc, query,orderBy,limit } from 'firebase/firestore';
 import { getStorage, ref, uploadBytes, getDownloadURL } from 'firebase/storage';
 import * as ImagePicker from 'expo-image-picker';
 import DateTimePicker from '@react-native-community/datetimepicker';
@@ -106,78 +106,143 @@ export default function NewProfile({ navigation }) {
     return true;
   };
 
-  const handleSubmit = async () => {
-    if (!validateForm()) return;
+//   const handleSubmit = async () => {
+//     if (!validateForm()) return;
 
-    setIsLoading(true);
-    setError('');
+//     setIsLoading(true);
+//     setError('');
 
-    try {
-      const profilesCollection = collection(db, 'profiles');
-      const snapshot = await getDocs(profilesCollection);
-      const profileCount = snapshot.size;
-      const q = query(profilesCollection, orderBy("createdAt", "desc"), limit(1));
-      const queryprofile = await getDocs(q);
+//     try {
+//       const profilesCollection = collection(db, 'profiles');
+//       const snapshot = await getDocs(profilesCollection);
+//       const profileCount = snapshot.size;
+//       const q = query(profilesCollection, orderBy("createdAt", "desc"), limit(1));
+//       const queryprofile = await getDocs(q);
 
-      // // Generate passport number dynamically with 7-digit padding
-      // const numericPart = (profileCount + 4).toString().padStart(7, '0');
-      // const passportNumber = `K${numericPart}A`;
-      let nextNum = 1; // Default if no profiles exist yet
+//       // // Generate passport number dynamically with 7-digit padding
+//       // const numericPart = (profileCount + 4).toString().padStart(7, '0');
+//       // const passportNumber = `K${numericPart}A`;
+//       let nextNum = 1; // Default if no profiles exist yet
     
-      if (!queryprofile.empty) {
-        // Get the ID of the most recently added document
-        const latestPassport = queryprofile.docs[0].id;
-        console.log("Latest passport found:", latestPassport);
+//       if (!queryprofile.empty) {
+//         // Get the ID of the most recently added document
+//         const latestPassport = queryprofile.docs[0].id;
+//         console.log("Latest passport found:", latestPassport);
         
-        // Extract the numeric part (assuming format is K#######A)
-        if (latestPassport.startsWith('K') && latestPassport.endsWith('A')) {
-          const numPart = latestPassport.substring(1, latestPassport.length - 1);
-          const latestNum = parseInt(numPart, 10);
-          if (!isNaN(latestNum)) {
-            nextNum = latestNum + 1;
-            console.log("Incrementing from latest number:", latestNum, "to", nextNum);
-          }
+//         // Extract the numeric part (assuming format is K#######A)
+//         if (latestPassport.startsWith('K') && latestPassport.endsWith('A')) {
+//           const numPart = latestPassport.substring(1, latestPassport.length - 1);
+//           const latestNum = parseInt(numPart, 10);
+//           if (!isNaN(latestNum)) {
+//             nextNum = latestNum + 1;
+//             console.log("Incrementing from latest number:", latestNum, "to", nextNum);
+//           }
+//         }
+//       } else {
+//         console.log("No existing passports found, starting with K0000001A");
+//       }
+
+//       const photoURL = await uploadImage(formData.photo, passportNumber);
+      
+//       await setDoc(doc(db, 'profiles', passportNumber), {
+//         name: formData.name,
+//         passport_image: photoURL,
+//         dob: formData.date.toISOString().split('T')[0],
+//         createdAt: new Date().toISOString(),
+//       });
+      
+//       navigation.navigate('ViewProfiles');
+//     } catch (err) {
+//       // More detailed error logging
+//       console.error('Error details:', err.message);
+//       setError(`Failed to create profile: ${err.message}`);
+//       Alert.alert('Error', `Failed to create profile: ${err.message}`);
+//     } finally {
+//       setIsLoading(false);
+//     }
+// };
+const handleSubmit = async () => {
+  if (!validateForm()) return;
+
+  setIsLoading(true);
+  setError('');
+
+  try {
+    const profilesCollection = collection(db, 'profiles');
+    const snapshot = await getDocs(profilesCollection);
+    const profileCount = snapshot.size;
+    
+    // Use the correct query syntax for Firebase v9+
+    const q = query(
+      profilesCollection, 
+      orderBy("createdAt", "desc"), 
+      limit(1)
+    );
+    
+    const queryprofile = await getDocs(q);
+    let nextNum = 1; // Default if no profiles exist yet
+  
+    if (!queryprofile.empty) {
+      // Get the ID of the most recently added document
+      const latestPassport = queryprofile.docs[0].id;
+      console.log("Latest passport found:", latestPassport);
+      
+      // Extract the numeric part (assuming format is K#######A)
+      if (latestPassport.startsWith('K') && latestPassport.endsWith('A')) {
+        const numPart = latestPassport.substring(1, latestPassport.length - 1);
+        const latestNum = parseInt(numPart, 10);
+        if (!isNaN(latestNum)) {
+          nextNum = latestNum + 1;
+          console.log("Incrementing from latest number:", latestNum, "to", nextNum);
         }
-      } else {
-        console.log("No existing passports found, starting with K0000001A");
       }
-
-      const photoURL = await uploadImage(formData.photo, passportNumber);
-      
-      await setDoc(doc(db, 'profiles', passportNumber), {
-        name: formData.name,
-        passport_image: photoURL,
-        dob: formData.date.toISOString().split('T')[0],
-        createdAt: new Date().toISOString(),
-      });
-      
-      navigation.navigate('ViewProfiles');
-    } catch (err) {
-      // More detailed error logging
-      console.error('Error details:', err.message);
-      setError(`Failed to create profile: ${err.message}`);
-      Alert.alert('Error', `Failed to create profile: ${err.message}`);
-    } finally {
-      setIsLoading(false);
+    } else {
+      console.log("No existing passports found, starting with K0000001A");
     }
+    
+    // Generate the passport number properly
+    const numericPart = nextNum.toString().padStart(7, '0');
+    const passportNumber = `K${numericPart}A`;
+    console.log("Generated passport number:", passportNumber);
+    
+    // Now that we have passportNumber defined, we can use it
+    const photoURL = await uploadImage(formData.photo, passportNumber);
+    
+    await setDoc(doc(db, 'profiles', passportNumber), {
+      name: formData.name,
+      passport_image: photoURL,
+      dob: formData.date.toISOString().split('T')[0],
+      createdAt: new Date().toISOString(),
+    });
+    
+    navigation.navigate('ViewProfiles');
+  } catch (err) {
+    // More detailed error logging
+    console.error('Error details:', err.message);
+    setError(`Failed to create profile: ${err.message}`);
+    Alert.alert('Error', `Failed to create profile: ${err.message}`);
+  } finally {
+    setIsLoading(false);
+  }
 };
-
   return (
+    <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
     <SafeAreaView style={styles.container}>
       <View style={styles.card}>
         <View style={styles.contentContainer}>
           <View style={styles.inputGroup}>
-            <Text style={styles.label}>Name</Text>
+            <Text style={styles.label}>Please fill in your name</Text>
             <TextInput
               style={styles.input}
               value={formData.name}
               onChangeText={(text) => setFormData(prev => ({...prev, name: text}))}
               placeholder="Enter name"
+              placeholderTextColor="#999"
               editable={!isLoading}
             />
           </View>
           <View style={styles.inputGroup}>
-  <Text style={styles.label}>Date of Birth</Text>
+  <Text style={styles.label}>Please select your Date of Birth</Text>
   <TouchableOpacity
     onPress={openDatePicker}
     style={styles.input}
@@ -205,6 +270,7 @@ export default function NewProfile({ navigation }) {
             display={Platform.OS === 'ios' ? 'inline' : 'calendar'}
             onChange={handleDateChange}
             maximumDate={new Date()}
+            themeVariant="light"
           />
         </View>
       </TouchableWithoutFeedback>
@@ -264,6 +330,7 @@ export default function NewProfile({ navigation }) {
         </View>
       </View>
     </SafeAreaView>
+  </TouchableWithoutFeedback>
   );
 }
 
@@ -307,16 +374,16 @@ const styles = StyleSheet.create({
   photoButton: {
     padding: 16,
     borderRadius: 6,
-    backgroundColor: '#f0f0f0',
+    backgroundColor: '#131b4d',
     alignItems: 'center',
     marginBottom: 16,
   },
   photoSelected: {
-    backgroundColor: '#e0e0e0',
+    backgroundColor: '#131b4d',
   },
   photoButtonText: {
     fontSize: 16,
-    color: '#666',
+    color: '#fff',
   },
   imageContainer: {
     alignItems: 'center',
@@ -340,12 +407,12 @@ const styles = StyleSheet.create({
     marginHorizontal: 6,
   },
   primaryButton: {
-    backgroundColor: '#007AFF',
+    backgroundColor: '#131b4d',
   },
   secondaryButton: {
     backgroundColor: '#fff',
     borderWidth: 1,
-    borderColor: '#007AFF',
+    borderColor: '#131b4d',
   },
   buttonDisabled: {
     opacity: 0.5,
@@ -356,7 +423,7 @@ const styles = StyleSheet.create({
     fontWeight: '600',
   },
   secondaryButtonText: {
-    color: '#007AFF',
+    color: '#131b4d',
     fontSize: 16,
     fontWeight: '600',
   },

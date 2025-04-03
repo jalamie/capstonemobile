@@ -3,6 +3,7 @@
     "name": "my-app",
     "slug": "my-app",
     "version": "1.0.0",
+    "newArchEnabled": true,
     "plugins": [
       [
         "expo-build-properties",
